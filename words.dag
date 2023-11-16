@@ -1,0 +1,27 @@
+# File name: words.dag
+
+# Run "condor_submit_dag sd.dag" to cause all the code specified in
+# the following Directed Acyclic Graph (DAG), below, to run:
+#
+# (pre 1)  prepare.sh -> download, unpack, concatenate, and split.
+#              |
+#              V
+# (job 1) process.sub
+#            / | \
+# five parallel runs of process.sh -> lowercase, remove punctuation, whitespaces.
+#            \ | /
+#              V
+# (post 1)  count.sh -> sort merge, count, and return countsOfWords.
+#
+
+JOB  process {
+    executable   = /path/job.process
+    output       = process.out.$(cluster)
+    error        = process.err.$(cluster)
+    log          = process_condor.log
+    universe     = vanilla
+}
+
+SCRIPT PRE  process  prepare.sh $JOB
+
+SCRIPT POST process stage-out job_status $RETURN
